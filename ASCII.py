@@ -58,14 +58,17 @@ if not ( os.path.isdir("Renders") ):
     os.mkdir("Renders")
 output = open(fileName, 'w')
 if ( os.path.isfile("letterset.ini")):
-    lettersetFile = open("letterset.ini")
+    lettersetFile = open("letterset.ini", 'w')
     letterset = lettersetFile.read()
-    print("test")
+    if ( len(letterset) < 2):
+        letterset = defaultLetterset
+        lettersetFile.write(defaultLetterset)
+        print ("Error: letterset too short. Reverting to default")
 else:
     lettersetFile = open("letterset.ini", 'w')
     lettersetFile.write(defaultLetterset)
     letterset = defaultLetterset
-    print ("letterset.ini not found: creating new file")
+    print ("Error: letterset.ini not found: creating new file")
 lettersetFile.close()
 text = ""
 
