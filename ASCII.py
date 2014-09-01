@@ -53,11 +53,18 @@ hdr = input ("Apply HDR? (y/n): ")
 invert = input ("Invert image? (y/n): ")
 
 #Initialization
+defulatLetterset = "@%#x+=:- "
 if not ( os.path.isdir("Renders") ):
     os.mkdir("Renders")
 output = open(fileName, 'w')
-lettersetFile = open("letterset.ini")
-letterset = lettersetFile.read()
+if ( os.path.isfile("letterset.ini")):
+    lettersetFile = open("letterset.ini")
+    letterset = lettersetFile.read()
+else:
+    lettersetFile = open("letterset.ini", 'w')
+    lettersetFile.write(defaultLetterset)
+    letterset = defaultLetterset
+    print ("letterset.ini not found: creating new file")
 lettersetFile.close()
 text = ""
 
