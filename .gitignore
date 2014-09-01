@@ -14,6 +14,18 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
+#Test Images
+*.jpg
+*.tiff
+*.gif
+*.jpeg
+*.bmp
+
+#Test output
+Renders/**
+*.txt
+!README.txt
+
 # =========================
 # Operating System Files
 # =========================
