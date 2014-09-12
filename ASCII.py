@@ -58,7 +58,7 @@ if not ( os.path.isdir("Renders") ):
     os.mkdir("Renders")
 output = open(fileName, 'w')
 if ( os.path.isfile("letterset.ini")):
-    lettersetFile = open("letterset.ini", 'w')
+    lettersetFile = open("letterset.ini", 'r+')
     letterset = lettersetFile.read()
     if ( len(letterset) < 2):
         letterset = defaultLetterset
