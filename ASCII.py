@@ -1,8 +1,10 @@
 #For Python3 on Windows
 from __future__ import division
-from PIL import Image
-from PIL import ImageStat
-import os, re
+from PIL import Image, ImageStat
+import sys
+import os
+import re
+import console
 
 #Dimension Enum
 class dim:
@@ -11,7 +13,7 @@ class dim:
 
 #Get FileName function
 def listFiles (ls):
-    imageList =[]
+    imageList = []
     for i in range (0, len (ls) ):
         if ( re.search ("\.(jpe?g|gif|png|bmp|tiff)$", ls[i]) ):
             print ( str(len(imageList)) + ". " + ls[i])
