@@ -4,6 +4,7 @@ from PIL import Image, ImageStat
 import sys
 import os
 import re
+import console
 
 #Dimension Enum
 class dim:
@@ -44,27 +45,12 @@ def round (number):
     else:
         return int(number) +1
 
-#Fit to console
-def fitToConsole (image):
-    consoleSize = os.get_terminal_size()
-    consoleRatio = consoleSize[dim.x] / consoleSize[dim.y]
-    imageRatio = image.size[dim.x] / image.size[dim.y]
-    if (consoleRatio / imageRatio <= 1):
-        #x dim is limiting
-        width = consoleSize[dim.x]
-        height = round( width / imageRatio /2 ) *2
-    else:
-        height = consoleSize[dim.y]
-        width = round( height * imageRatio /2 ) *2
-    print (width, height)
-    return image.resize((width, height))
-
 #Prompt User / Set variables
 print ("Image files in current directory:")
 imageName = listFiles ( os.listdir() )
 name = re.match( "(.+)\.", imageName )
 fileName = "Renders\\" + name.group(1) + ".txt"
-#width = getInteger("Width of output file: ")
+width = getInteger("Width of output file: ")
 hdr = input ("Apply HDR? (y/n): ")
 invert = input ("Invert image? (y/n): ")
 
@@ -92,7 +78,11 @@ text = ""
 image = Image.open (imageName)
 image = image.convert ('L')
 
-image = fitToConsole(image)
+#Resize image
+ratio = width / image.size[dim.x]
+height = round( ratio * image.size[dim.y] / 2) *2
+image = image.resize((width,height))
+
 
 #Apply Effects
 data = []
@@ -120,8 +110,7 @@ for y in range ( 0, image.size[dim.y], 2 ):
     text += "\n"
 
 #Write to File
-print (text)
 output.write( text )
 output.close()
-#print ("Done")
+print ("Done")
 os.startfile(fileName)
