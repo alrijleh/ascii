@@ -4,7 +4,6 @@ from PIL import Image, ImageStat
 import sys
 import os
 import re
-import console
 
 #Dimension Enum
 class dim:
