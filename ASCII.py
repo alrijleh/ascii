@@ -1,4 +1,4 @@
-#For Python3 on Windows
+#For Python3
 from PIL import Image, ImageStat
 import sys
 import os
@@ -59,34 +59,33 @@ def fitToConsole (image):
         width = round(height * imageRatio /2) *2
     return (image.resize((width, height)), limit)
 
+#Load Letterset Function
+def getLetterset():
+    defaultLetterset = "@%#x+=:- "
+    try:
+        lettersetFile = open("letterset.ini", 'r+')
+        letterset = lettersetFile.read()
+        if ( len(letterset) < 2):
+            print ("Error: letterset too short. Reverting to default")
+            lettersetFile.write(defaultLetterset)
+            letterset = defaultLetterset
+    except:
+        print ("Error: letterset.ini not found: creating new file")
+        lettersetFile.write(defaultLetterset)
+        letterset = defaultLetterset
+    finally:
+        lettersetFile.close()
+    return letterset
+
 #Prompt User / Set variables
 print ("Image files in current directory:")
 imageName = listFiles ( os.listdir() )
 name = re.match( "(.+)\.", imageName )
-fileName = "Renders\\" + name.group(1) + ".txt"
-#width = getInteger("Width of output file: ")
 hdr = input ("Apply HDR? (y/n): ")
 invert = input ("Invert image? (y/n): ")
-
-#Initialization
-defaultLetterset = "@%#x+=:- "
-if not ( os.path.isdir("Renders") ):
-    os.mkdir("Renders")
-output = open(fileName, 'w')
-if ( os.path.isfile("letterset.ini")):
-    lettersetFile = open("letterset.ini", 'r+')
-    letterset = lettersetFile.read()
-    if ( len(letterset) < 2):
-        letterset = defaultLetterset
-        lettersetFile.write(defaultLetterset)
-        print ("Error: letterset too short. Reverting to default")
-else:
-    lettersetFile = open("letterset.ini", 'w')
-    lettersetFile.write(defaultLetterset)
-    letterset = defaultLetterset
-    print ("Error: letterset.ini not found: creating new file")
-lettersetFile.close()
 text = ""
+
+letterset = getLetterset()
 
 #Load image and convert to greyscale
 image = Image.open (imageName)
