@@ -77,45 +77,47 @@ def getLetterset():
         lettersetFile.close()
     return letterset
 
+#Apply Effects
+def modifyImage(image, hdr, invert):
+    data = []
+    stats = ImageStat.Stat(image)
+    [(min, max)] = stats.extrema
+    for y in range (0, image.size[dim.y]):
+        for x in range (0, image.size[dim.x]):
+            pixel = image.getpixel ((x,y))
+            if (hdr != 'n'):
+                offset = min - 0
+                stretch = 255 / max
+                pixel = (pixel - offset) * stretch
+            if invert == 'y': pixel = 255 - pixel
+            data.append (pixel)
+    newImage = Image.new ('L', image.size)
+    newImage.putdata (data)
+    return newImage
+
+#Generate ASCII
+def ascii(image, limit):
+    text = ""
+    for y in range ( 0, image.size[dim.y], 2 ):
+        for x in range ( 0, image.size[dim.x] ):
+            brightness = ( image.getpixel(( x, y)) + image.getpixel((x,y+1)) ) / 2
+            index = round( (brightness / 255) * len(letterset) ) -1
+            text += letterset[ index ]
+        if limit =='vertical': text += '\n'
+    return text
+
 #Prompt User / Set variables
 print ("Image files in current directory:")
 imageName = listFiles ( os.listdir() )
 name = re.match( "(.+)\.", imageName )
 hdr = input ("Apply HDR? (y/n): ")
 invert = input ("Invert image? (y/n): ")
-text = ""
 
 letterset = getLetterset()
-
-#Load image and convert to greyscale
-image = Image.open (imageName)
-image = image.convert ('L')
-
+image = Image.open (imageName).convert('L')
 (image, limit) = fitToConsole(image)
-
-#Apply Effects
-data = []
-stats = ImageStat.Stat(image)
-[(min, max)] = stats.extrema
-for y in range (0, image.size[dim.y]):
-    for x in range (0, image.size[dim.x]):
-        pixel = image.getpixel ((x,y))
-        if (hdr != 'n'):
-            offset = min - 0
-            stretch = 255 / max
-            pixel = (pixel - offset) * stretch
-        if invert == 'y': pixel = 255 - pixel
-        data.append (pixel)
-image = Image.new ('L', image.size)
-image.putdata (data)
-
-#Generate ASCII
-for y in range ( 0, image.size[dim.y], 2 ):
-    for x in range ( 0, image.size[dim.x] ):
-        brightness = ( image.getpixel(( x, y)) + image.getpixel((x,y+1)) ) / 2
-        index = round( (brightness / 255) * len(letterset) ) -1
-        text += letterset[ index ]
-    if limit =='vertical': text += '\n' 
+image = modifyImage(image, hdr, invert)
+text = ascii(image, limit)
 
 #Write to File
 print (text)
