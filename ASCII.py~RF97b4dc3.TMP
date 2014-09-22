@@ -1,4 +1,5 @@
 #For Python3 on Windows
+from __future__ import division
 from PIL import Image, ImageStat
 import sys
 import os
@@ -45,26 +46,25 @@ def round (number):
 
 #Fit to console
 def fitToConsole (image):
-    consoleSize = (os.get_terminal_size()[dim.x], round (os.get_terminal_size()[dim.y] /2) *4)
+    consoleSize = os.get_terminal_size()
     consoleRatio = consoleSize[dim.x] / consoleSize[dim.y]
     imageRatio = image.size[dim.x] / image.size[dim.y]
-    limit = None
     if (consoleRatio / imageRatio <= 1):
-        limit = 'horizantal'
+        #x dim is limiting
         width = consoleSize[dim.x]
         height = round( width / imageRatio /2 ) *2
     else:
-        limit = 'vertical'
         height = consoleSize[dim.y]
-        width = round(height * imageRatio /2) *2
-    return (image.resize((width, height)), limit)
+        width = round( height * imageRatio /2 ) *2
+    print (width, height)
+    return image.resize((width, height))
 
 #Prompt User / Set variables
 print ("Image files in current directory:")
 imageName = listFiles ( os.listdir() )
 name = re.match( "(.+)\.", imageName )
 fileName = "Renders\\" + name.group(1) + ".txt"
-#width = getInteger("Width of output file: ")
+width = getInteger("Width of output file: ")
 hdr = input ("Apply HDR? (y/n): ")
 invert = input ("Invert image? (y/n): ")
 
@@ -92,7 +92,12 @@ text = ""
 image = Image.open (imageName)
 image = image.convert ('L')
 
-(image, limit) = fitToConsole(image)
+#Resize image
+ratio = width / image.size[dim.x]
+height = round( ratio * image.size[dim.y] / 2) *2
+image = image.resize((width,height))
+
+#image = fitToConsole(image)
 
 #Apply Effects
 data = []
@@ -105,7 +110,8 @@ for y in range (0, image.size[dim.y]):
             offset = min - 0
             stretch = 255 / max
             pixel = (pixel - offset) * stretch
-        if invert == 'y': pixel = 255 - pixel
+        if (invert == 'y'):
+            pixel = 255 - pixel
         data.append (pixel)
 image = Image.new ('L', image.size)
 image.putdata (data)
@@ -116,7 +122,11 @@ for y in range ( 0, image.size[dim.y], 2 ):
         brightness = ( image.getpixel(( x, y)) + image.getpixel((x,y+1)) ) / 2
         index = round( (brightness / 255) * len(letterset) ) -1
         text += letterset[ index ]
-    if limit =='vertical': text += '\n' 
+    text += "\n"
 
 #Write to File
 print (text)
+output.write( text )
+output.close()
+#print ("Done")
+#os.startfile(fileName)
