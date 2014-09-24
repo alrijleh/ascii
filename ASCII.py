@@ -1,8 +1,10 @@
 #For Python3
-from PIL import Image, ImageStat
 import sys
+import argparse
 import os
 import re
+
+from PIL import Image, ImageStat
 
 #Dimension Enum
 class dim:
@@ -10,22 +12,22 @@ class dim:
     y = 1
 
 #Get FileName function
-def listFiles (ls):
-    imageList = []
+def list_files (ls):
+    image_list = []
     for i in range (0, len (ls) ):
         if ( re.search ("\.(jpe?g|gif|png|bmp|tiff)$", ls[i]) ):
-            print ( str(len(imageList)) + ". " + ls[i])
-            imageList.append (ls[i])
-    if ( len(imageList) == 0):
+            print ( str(len(image_list)) + ". " + ls[i])
+            image_list.append (ls[i])
+    if ( len(image_list) == 0):
         _ = input("Error: No image files found")
         exit()
-    if ( len(imageList) == 1):
-        return imageList[0]
+    if ( len(image_list) == 1):
+        return image_list[0]
     while (True):
         index = getInteger("Enter selection number: ")
-        if (index < len(imageList) and index >= 0):
-            return imageList[ index ]
-        print ("Error: input must be between %s and %s\n" % (0, len(imageList)-1) )
+        if (index < len(image_list) and index >= 0):
+            return image_list[ index ]
+        print ("Error: input must be between %s and %s\n" % (0, len(image_list)-1) )
 
 #Get integer from user input
 def getInteger(query):
@@ -44,41 +46,41 @@ def round (number):
         return int(number) +1
 
 #Fit to console
-def fitToConsole (image):
-    consoleSize = (os.get_terminal_size()[dim.x], round (os.get_terminal_size()[dim.y] /2) *4)
-    consoleRatio = consoleSize[dim.x] / consoleSize[dim.y]
-    imageRatio = image.size[dim.x] / image.size[dim.y]
+def fit_to_console (image):
+    console_size = (os.get_terminal_size()[dim.x], round (os.get_terminal_size()[dim.y] /2) *4)
+    console_ratio = console_size[dim.x] / console_size[dim.y]
+    image_ratio = image.size[dim.x] / image.size[dim.y]
     limit = None
-    if (consoleRatio / imageRatio <= 1):
+    if (console_ratio / image_ratio <= 1):
         limit = 'horizantal'
-        width = consoleSize[dim.x]
-        height = round( width / imageRatio /2 ) *2
+        width = console_size[dim.x]
+        height = round(width / image_ratio /2) *2
     else:
         limit = 'vertical'
-        height = consoleSize[dim.y]
-        width = round(height * imageRatio /2) *2
+        height = console_size[dim.y]
+        width = round(height * image_ratio /2) *2
     return (image.resize((width, height)), limit)
 
 #Load Letterset Function
-def getLetterset():
-    defaultLetterset = "@%#x+=:- "
+def get_letterset():
+    default_letterset = "@%#x+=:- "
     try:
-        lettersetFile = open("letterset.ini", 'r+')
-        letterset = lettersetFile.read()
+        letterset_file = open("letterset.ini", 'r+')
+        letterset = letterset_file.read()
         if ( len(letterset) < 2):
             print ("Error: letterset too short. Reverting to default")
-            lettersetFile.write(defaultLetterset)
-            letterset = defaultLetterset
+            letterset_file.write(default_letterset)
+            letterset = default_letterset
     except:
         print ("Error: letterset.ini not found: creating new file")
-        lettersetFile.write(defaultLetterset)
-        letterset = defaultLetterset
+        letterset_file.write(default_letterset)
+        letterset = default_letterset
     finally:
-        lettersetFile.close()
+        letterset_file.close()
     return letterset
 
 #Apply Effects
-def modifyImage(image, hdr, invert):
+def modify_image(image, hdr, invert):
     data = []
     stats = ImageStat.Stat(image)
     [(min, max)] = stats.extrema
@@ -89,11 +91,12 @@ def modifyImage(image, hdr, invert):
                 offset = min - 0
                 stretch = 255 / max
                 pixel = (pixel - offset) * stretch
-            if invert == 'y': pixel = 255 - pixel
+            if (invert == 'y'):
+                pixel = 255 - pixel
             data.append (pixel)
-    newImage = Image.new ('L', image.size)
-    newImage.putdata (data)
-    return newImage
+    new_image = Image.new ('L', image.size)
+    new_image.putdata (data)
+    return new_image
 
 #Generate ASCII
 def ascii(image, limit):
@@ -103,21 +106,20 @@ def ascii(image, limit):
             brightness = ( image.getpixel(( x, y)) + image.getpixel((x,y+1)) ) / 2
             index = round( (brightness / 255) * len(letterset) ) -1
             text += letterset[ index ]
-        if limit =='vertical': text += '\n'
+        if (limit =='vertical'):
+            text += '\n'
     return text
 
 #Prompt User / Set variables
 print ("Image files in current directory:")
-imageName = listFiles ( os.listdir() )
-name = re.match( "(.+)\.", imageName )
+image_name = list_files ( os.listdir() )
+name = re.match( "(.+)\.", image_name )
 hdr = input ("Apply HDR? (y/n): ")
 invert = input ("Invert image? (y/n): ")
 
-letterset = getLetterset()
-image = Image.open (imageName).convert('L')
-(image, limit) = fitToConsole(image)
-image = modifyImage(image, hdr, invert)
+letterset = get_letterset()
+image = Image.open (image_name).convert('L')
+(image, limit) = fit_to_console(image)
+image = modify_image(image, hdr, invert)
 text = ascii(image, limit)
-
-#Write to File
 print (text)
