@@ -26,7 +26,7 @@ def list_files (ls):
     while (True):
         index = getInteger("Enter selection number: ")
         if (index < len(image_list) and index >= 0):
-            return image_list[ index ]
+            return image_list[index]
         print ("Error: input must be between %s and %s\n" % (0, len(image_list)-1) )
 
 #Get integer from user input
@@ -87,11 +87,11 @@ def modify_image(image, hdr, invert):
     for y in range (0, image.size[dim.y]):
         for x in range (0, image.size[dim.x]):
             pixel = image.getpixel ((x,y))
-            if (hdr != 'n'):
+            if hdr:
                 offset = min - 0
                 stretch = 255 / max
                 pixel = (pixel - offset) * stretch
-            if (invert == 'y'):
+            if invert:
                 pixel = 255 - pixel
             data.append (pixel)
     new_image = Image.new ('L', image.size)
@@ -110,16 +110,18 @@ def ascii(image, limit):
             text += '\n'
     return text
 
-#Prompt User / Set variables
-print ("Image files in current directory:")
-image_name = list_files ( os.listdir() )
-name = re.match( "(.+)\.", image_name )
-hdr = input ("Apply HDR? (y/n): ")
-invert = input ("Invert image? (y/n): ")
+#Main
+parser = argparse.ArgumentParser()
+parser.add_argument('-j', action='store_false', default=True, dest='hdr')
+parser.add_argument('-i', action='store_true', default=False, dest='invert')
+parser.add_argument('filename')
+
+options = parser.parse_args()
+print (options)
 
 letterset = get_letterset()
-image = Image.open (image_name).convert('L')
+image = Image.open (options.filename).convert('L')
 (image, limit) = fit_to_console(image)
-image = modify_image(image, hdr, invert)
+image = modify_image(image, options.hdr, options.invert)
 text = ascii(image, limit)
 print (text)
