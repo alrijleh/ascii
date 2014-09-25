@@ -11,32 +11,6 @@ class dim:
     x = 0
     y = 1
 
-#Get FileName function
-def list_files (ls):
-    image_list = []
-    for i in range (0, len (ls) ):
-        if ( re.search ("\.(jpe?g|gif|png|bmp|tiff)$", ls[i]) ):
-            print ( str(len(image_list)) + ". " + ls[i])
-            image_list.append (ls[i])
-    if ( len(image_list) == 0):
-        _ = input("Error: No image files found")
-        exit()
-    if ( len(image_list) == 1):
-        return image_list[0]
-    while (True):
-        index = getInteger("Enter selection number: ")
-        if (index < len(image_list) and index >= 0):
-            return image_list[index]
-        print ("Error: input must be between %s and %s\n" % (0, len(image_list)-1) )
-
-#Get integer from user input
-def getInteger(query):
-    while (True):
-        try:
-            return int( input(query) )
-        except:
-            print ("Error: input must be an integer\n")
-
 #Rounding function
 def round (number):
     diff = number - int(number)
@@ -129,9 +103,9 @@ def open_image(filename):
 #Get arguments
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-j', help='turn off hdr', action='store_false', default=True, dest='hdr')
-    parser.add_argument('-i', help='invert the image', action='store_true', default=False, dest='invert')
-    parser.add_argument('-w', help='set the width of the image', type=int, default=0, dest='width')
+    parser.add_argument('-j', help="Turn off hdr - By default the contrast will be altered so that the image uses the entire colorspace. This option prevents that", action='store_false', default=True, dest='hdr')
+    parser.add_argument('-i', help="invert the image - this is used if displaying dark text on a white background", action='store_true', default=False, dest='invert')
+    parser.add_argument('-w', help="width of the image in pixels (must be an integer)", type=int, default=0, dest='width')
     parser.add_argument('filename', help='path of image to be viewed')
     args = parser.parse_args()
     return args
