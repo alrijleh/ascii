@@ -11,7 +11,6 @@ class dim:
     x = 0
     y = 1
 
-#Rounding function
 def round (number):
     """Rounds a float to an int"""
     diff = number - int(number)
@@ -93,7 +92,7 @@ def ascii(image, letterset, add_newline):
             text += '\n'
     return text
 
-#Open image
+
 def open_image(filename):
     """Opens an image file and returns an image object"""
     try:
@@ -102,7 +101,7 @@ def open_image(filename):
         sys.exit("Error: could not open " + filename)
     return image
 
-#Get arguments
+
 def get_args():
     """Gets arguments from command line"""
     parser = argparse.ArgumentParser()
