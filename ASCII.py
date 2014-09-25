@@ -6,21 +6,22 @@ import re
 
 from PIL import Image, ImageStat
 
-#Dimension Enum
 class dim:
+    """Dimension Enumerator"""
     x = 0
     y = 1
 
 #Rounding function
 def round (number):
+    """Rounds a float to an int"""
     diff = number - int(number)
     if (diff < .5):
         return int(number)
     else:
         return int(number) +1
 
-#Resize Image
 def resize (image, width):
+    """Resize image to specified size or console"""
     add_newline = True
     if width:
         scale_factor = width / image.size[dim.x]
@@ -40,8 +41,8 @@ def resize (image, width):
             width = round(height * image_ratio /2) *2
     return (image.resize((width, height)), add_newline)
 
-#Load Letterset Function
 def get_letterset():
+    """Load the letterset from file"""
     default_letterset = " -:=+x#%@"
     path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(path, 'letterset.ini')
@@ -61,8 +62,8 @@ def get_letterset():
         letterset_file.close()
     return letterset
 
-#Apply Effects
 def modify_image(image, hdr, invert):
+    """Apply affects to the image"""
     data = []
     stats = ImageStat.Stat(image)
     [(min, max)] = stats.extrema
@@ -80,8 +81,8 @@ def modify_image(image, hdr, invert):
     new_image.putdata (data)
     return new_image
 
-#Generate ASCII
 def ascii(image, letterset, add_newline):
+    """Generate ascii text from the image"""
     text = ""
     for y in range ( 0, image.size[dim.y], 2 ):
         for x in range ( 0, image.size[dim.x] ):
@@ -94,6 +95,7 @@ def ascii(image, letterset, add_newline):
 
 #Open image
 def open_image(filename):
+    """Opens an image file and returns an image object"""
     try:
         image = Image.open(filename).convert('L')
     except:
@@ -102,6 +104,7 @@ def open_image(filename):
 
 #Get arguments
 def get_args():
+    """Gets arguments from command line"""
     parser = argparse.ArgumentParser()
     parser.add_argument('-j', help="Turn off hdr - By default the contrast will be altered so that the image uses the entire colorspace. This option prevents that", action='store_false', default=True, dest='hdr')
     parser.add_argument('-i', help="invert the image - this is used if displaying dark text on a white background", action='store_true', default=False, dest='invert')
