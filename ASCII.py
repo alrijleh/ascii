@@ -45,27 +45,34 @@ def round (number):
     else:
         return int(number) +1
 
-#Fit to console
-def fit_to_console (image):
-    console_size = (os.get_terminal_size()[dim.x], round (os.get_terminal_size()[dim.y] /2) *4)
-    console_ratio = console_size[dim.x] / console_size[dim.y]
-    image_ratio = image.size[dim.x] / image.size[dim.y]
-    limit = None
-    if (console_ratio / image_ratio <= 1):
-        limit = 'horizantal'
-        width = console_size[dim.x]
-        height = round(width / image_ratio /2) *2
+#Resize Image
+def resize (image, width):
+    add_newline = True
+    if width:
+        scale_factor = width / image.size[dim.x]
+        height = round(scale_factor * image.size[dim.y] /2) *2
+        image = image.resize((width,height))
     else:
-        limit = 'vertical'
-        height = console_size[dim.y]
-        width = round(height * image_ratio /2) *2
-    return (image.resize((width, height)), limit)
+        console_size = (os.get_terminal_size()[dim.x], round (os.get_terminal_size()[dim.y] /2) *4)
+        console_ratio = console_size[dim.x] / console_size[dim.y]
+        image_ratio = image.size[dim.x] / image.size[dim.y]
+        limit = None
+        if (console_ratio / image_ratio <= 1):
+            width = console_size[dim.x]
+            height = round(width / image_ratio /2) *2
+            add_newline = False
+        else:
+            height = console_size[dim.y]
+            width = round(height * image_ratio /2) *2
+    return (image.resize((width, height)), add_newline)
 
 #Load Letterset Function
 def get_letterset():
-    default_letterset = "@%#x+=:- "
+    default_letterset = " -:=+x#%@"
+    path = os.path.dirname(os.path.realpath(__file__))
+    filepath = os.path.join(path, 'letterset.ini')
     try:
-        letterset_file = open("letterset.ini", 'r+')
+        letterset_file = open(filepath, 'r+')
         letterset = letterset_file.read()
         if ( len(letterset) < 2):
             print ("Error: letterset too short. Reverting to default")
@@ -73,6 +80,7 @@ def get_letterset():
             letterset = default_letterset
     except:
         print ("Error: letterset.ini not found: creating new file")
+        letterset_file = open(filepath, 'w')
         letterset_file.write(default_letterset)
         letterset = default_letterset
     finally:
@@ -99,29 +107,44 @@ def modify_image(image, hdr, invert):
     return new_image
 
 #Generate ASCII
-def ascii(image, limit):
+def ascii(image, letterset, add_newline):
     text = ""
     for y in range ( 0, image.size[dim.y], 2 ):
         for x in range ( 0, image.size[dim.x] ):
             brightness = ( image.getpixel(( x, y)) + image.getpixel((x,y+1)) ) / 2
             index = round( (brightness / 255) * len(letterset) ) -1
             text += letterset[ index ]
-        if (limit =='vertical'):
+        if add_newline:
             text += '\n'
     return text
 
+#Open image
+def open_image(filename):
+    try:
+        image = Image.open(filename).convert('L')
+    except:
+        sys.exit("Error: could not open " + filename)
+    return image
+
+#Get arguments
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-j', help='turn off hdr', action='store_false', default=True, dest='hdr')
+    parser.add_argument('-i', help='invert the image', action='store_true', default=False, dest='invert')
+    parser.add_argument('-w', help='set the width of the image', type=int, default=0, dest='width')
+    parser.add_argument('filename', help='path of image to be viewed')
+    args = parser.parse_args()
+    return args
+
 #Main
-parser = argparse.ArgumentParser()
-parser.add_argument('-j', action='store_false', default=True, dest='hdr')
-parser.add_argument('-i', action='store_true', default=False, dest='invert')
-parser.add_argument('filename')
+def main():
+    args = get_args()
+    letterset = get_letterset()
+    image = open_image(args.filename)
+    image, add_newline = resize(image, args.width)
+    image = modify_image(image, args.hdr, args.invert)
+    text = ascii(image, letterset, add_newline)
+    print (text)
 
-options = parser.parse_args()
-print (options)
-
-letterset = get_letterset()
-image = Image.open (options.filename).convert('L')
-(image, limit) = fit_to_console(image)
-image = modify_image(image, options.hdr, options.invert)
-text = ascii(image, limit)
-print (text)
+if __name__ == "__main__":
+    main()
